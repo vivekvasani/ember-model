@@ -158,7 +158,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   _loadRecordFromData: function(record, data) {
     var rootKey = get(record.constructor, 'rootKey'),
-        primaryKey = get(record.constructor, 'primaryKey');
+      primaryKey = get(record.constructor, 'primaryKey');
     // handle HEAD response where no data is provided by server
     if (data) {
       data = rootKey ? get(data, rootKey) : data;

@@ -61,11 +61,11 @@ test("findAll loads the full JSON payload when collectionKey isn't specified", f
   expect(1);
 
   var data = [
-        {id: 1, name: 'Erik'},
-        {id: 2, name: 'Aaron'}
-      ],
-      records;
-      RESTModel.collectionKey = undefined;
+      {id: 1, name: 'Erik'},
+      {id: 2, name: 'Aaron'}
+    ],
+    records;
+  RESTModel.collectionKey = undefined;
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -82,13 +82,13 @@ test("findAll loads the proper JSON payload subset when collectionKey is specifi
   expect(1);
 
   var data = {
-        posts: [
-          {id: 1, name: 'Erik'},
-          {id: 2, name: 'Aaron'}
-        ]
-      },
-      records;
-      RESTModel.collectionKey = "posts";
+      posts: [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ]
+    },
+    records;
+  RESTModel.collectionKey = "posts";
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -111,12 +111,12 @@ test("findAll uses Ember.get for a collectionKey", function() {
   });
 
   var data = {
-        posts: [
-          {id: 1, name: 'Erik'},
-          {id: 2, name: 'Aaron'}
-        ]
-      },
-      records;
+      posts: [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ]
+    },
+    records;
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -133,13 +133,13 @@ test("findAll calls didFindAll callback after finishing", function() {
   expect(4);
 
   var data = {
-        posts: [
-          {id: 1, name: 'Erik'},
-          {id: 2, name: 'Aaron'}
-        ]
-      },
-      records, args, context,
-      didFindAll = adapter.didFindAll;
+      posts: [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ]
+    },
+    records, args, context,
+    didFindAll = adapter.didFindAll;
 
   RESTModel.collectionKey = 'posts';
   adapter._ajax = function(url, params, method) {
@@ -166,12 +166,12 @@ test("findById", function() {
   expect(4);
 
   var data = {
-        post: {
-          id: 1,
-          name: "Test Title"
-        }
-      },
-      record;
+      post: {
+        id: 1,
+        name: "Test Title"
+      }
+    },
+    record;
 
   adapter._ajax = function(url, params, method) {
     equal(url, "/posts/1");
@@ -191,7 +191,7 @@ test("findById loads the full JSON payload when rootKey isn't specified", functi
   expect(1);
 
   var data = {id: 1, name: "Erik"},
-      record;
+    record;
   RESTModel.rootKey = undefined;
 
   adapter._ajax = function(url, params, method) {
@@ -209,11 +209,11 @@ test("findById loads the proper JSON payload subset when rootKey is specified", 
   expect(1);
 
   var data = {
-        post: {
-          id: 1,
-          name: "Erik"
-        }
-      },
+      post: {
+        id: 1,
+        name: "Erik"
+      }
+    },
     record;
   RESTModel.rootKey = "post";
 
@@ -238,11 +238,11 @@ test("findById uses Ember.get to fetch rootKey", function() {
   });
 
   var data = {
-        post: {
-          id: 1,
-          name: "Erik"
-        }
-      },
+      post: {
+        id: 1,
+        name: "Erik"
+      }
+    },
     record;
 
   adapter._ajax = function(url, params, method) {
@@ -260,11 +260,11 @@ test("find calls didFind after finishing", function() {
   expect(4);
 
   var data = {
-        post: {
-          id: 1,
-          name: "Erik"
-        }
-      },
+      post: {
+        id: 1,
+        name: "Erik"
+      }
+    },
     record, args, context,
     didFind = adapter.didFind,
     id = 1;
@@ -307,11 +307,11 @@ test("findQuery loads the full JSON payload when collectionKey isn't specified",
   expect(1);
 
   var data = [
-        {id: 1, name: 'Erik'},
-        {id: 2, name: 'Aaron'}
-      ],
-      records;
-      RESTModel.collectionKey = undefined;
+      {id: 1, name: 'Erik'},
+      {id: 2, name: 'Aaron'}
+    ],
+    records;
+  RESTModel.collectionKey = undefined;
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -328,13 +328,13 @@ test("findQuery loads the data from a specified collectionKey", function() {
   expect(1);
 
   var data = {
-        people: [
-          {id: 1, name: 'Erik'},
-          {id: 2, name: 'Aaron'}
-        ]
-      },
-      records;
-      RESTModel.collectionKey = "people";
+      people: [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ]
+    },
+    records;
+  RESTModel.collectionKey = "people";
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -357,12 +357,12 @@ test("findQuery uses Ember.get for a collectionKey", function() {
   });
 
   var data = {
-        posts: [
-          {id: 1, name: 'Erik'},
-          {id: 2, name: 'Aaron'}
-        ]
-      },
-      records;
+      posts: [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ]
+    },
+    records;
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -379,14 +379,14 @@ test("findQuery calls didFindQuery callback after finishing", function() {
   expect(4);
 
   var data = {
-        posts: [
-          {id: 1, name: 'Erik'},
-          {id: 2, name: 'Aaron'}
-        ]
-      },
-      records, args, context,
-      didFindQuery = adapter.didFindQuery,
-      params = { foo: 'bar' };
+      posts: [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ]
+    },
+    records, args, context,
+    didFindQuery = adapter.didFindQuery,
+    params = { foo: 'bar' };
 
   RESTModel.collectionKey = 'posts';
   adapter._ajax = function(url, params, method) {
@@ -412,7 +412,7 @@ test("findQuery calls didFindQuery callback after finishing", function() {
 test("findQuery with params", function() {
   expect(1);
 
-  adapter._ajax = function(url, params, method) { 
+  adapter._ajax = function(url, params, method) {
     deepEqual(params, {foo: 'bar', num: 42});
     return ajaxSuccess({posts: []});
   };
@@ -443,8 +443,8 @@ test("createRecord calls didCreateRecord", function() {
   expect(5);
 
   var record = RESTModel.create({name: "Erik"}),
-      args, context, didCreateRecord = adapter.didCreateRecord,
-      data = {post: {id: 1, name: "Erik"}};
+    args, context, didCreateRecord = adapter.didCreateRecord,
+    data = {post: {id: 1, name: "Erik"}};
 
   // ok(record.get('isDirty'), "Record should be dirty");
   ok(record.get('isNew'), "Record should be new");
@@ -471,7 +471,7 @@ test("createRecord record loads data in response", function() {
   expect(2);
 
   var data = {post: {id: 1, name: 'Erik 2'}},
-      record = RESTModel.create({name: 'Erik'});
+    record = RESTModel.create({name: 'Erik'});
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -507,7 +507,7 @@ test("saveRecord calls didSaveRecord after saving record", function() {
   expect(5);
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      data = {id: 1, name: "Erik"}, args, didSaveRecord = adapter.didSaveRecord, context;
+    data = {id: 1, name: "Erik"}, args, didSaveRecord = adapter.didSaveRecord, context;
 
   record.set('name', "Kris");
   ok(record.get('isDirty'), "Record should be dirty");
@@ -534,7 +534,7 @@ test("saveRecord loads response data if it exists", function() {
   expect(4);
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      responseData = {post: {id: 1, name: "Bill"}};
+    responseData = {post: {id: 1, name: "Bill"}};
 
   record.set('name', 'John');
   ok(record.get('isDirty'), 'Record should be dirty');
@@ -553,7 +553,7 @@ test("saveRecord loads response data if it exists", function() {
 test("saveRecord does not load empty response", function() {
   expect(4);
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      responseData = '';
+    responseData = '';
 
   record.set('name', 'John');
   ok(record.get('isDirty'), 'Record should be dirty');
@@ -572,7 +572,7 @@ test("saveRecord does not load empty response", function() {
 test("saveRecord does not load HEAD response (undefined response body)", function() {
   expect(4);
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      responseData = '';
+    responseData = '';
 
   record.set('name', 'John');
   ok(record.get('isDirty'), 'Record should be dirty');
@@ -591,7 +591,7 @@ test("saveRecord does not load HEAD response (undefined response body)", functio
 test("saveRecord does not load response if root key is missing", function() {
   expect(4);
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      responseData = {notRootKey: true};
+    responseData = {notRootKey: true};
 
   record.set('name', 'John');
   ok(record.get('isDirty'), 'Record should be dirty');
@@ -629,7 +629,7 @@ test("deleteRecord calls didDeleteRecord after deleting", function() {
   expect(5);
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      args, didDeleteRecord = adapter.didDeleteRecord, data = { ok: true }, context;
+    args, didDeleteRecord = adapter.didDeleteRecord, data = { ok: true }, context;
 
   ok(!record.get('isDeleted'), "Record should not be deleted");
 
@@ -668,12 +668,12 @@ test("Model.find([id]) works as expected", function() {
   expect(1);
 
   var data = {
-        post: {
-          id: 1,
-          name: "Test Title"
-        }
-      },
-      record, records, promise;
+      post: {
+        id: 1,
+        name: "Test Title"
+      }
+    },
+    record, records, promise;
 
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -757,10 +757,10 @@ test("find with 0", function() {
   expect(3);
 
   var RESTModel = Ember.Model.extend({
-        id: Ember.attr(),
-        name: Ember.attr()
-      }),
-      adapter = RESTModel.adapter = Ember.RESTAdapter.create();
+      id: Ember.attr(),
+      name: Ember.attr()
+    }),
+    adapter = RESTModel.adapter = Ember.RESTAdapter.create();
 
   RESTModel.url = '/posts';
 
@@ -777,8 +777,8 @@ test("find() resolves with record", function() {
   expect(1);
 
   var data = {id: 1, name: 'Erik'},
-      record = RESTModel.create();
-  
+    record = RESTModel.create();
+
   RESTModel.collectionKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -795,11 +795,11 @@ test("findAll() resolves with records", function() {
   expect(1);
 
   var data = [
-        {id: 1, name: 'Erik'},
-        {id: 2, name: 'Aaron'}
-      ],
-      records = Ember.RecordArray.create();
-  
+      {id: 1, name: 'Erik'},
+      {id: 2, name: 'Aaron'}
+    ],
+    records = Ember.RecordArray.create();
+
   RESTModel.collectionKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -816,11 +816,11 @@ test("findQuery() resolves with records", function() {
   expect(1);
 
   var data = [
-        {id: 1, name: 'Erik'},
-        {id: 2, name: 'Aaron'}
-      ],
-      records = Ember.RecordArray.create();
-  
+      {id: 1, name: 'Erik'},
+      {id: 2, name: 'Aaron'}
+    ],
+    records = Ember.RecordArray.create();
+
   RESTModel.collectionKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -837,8 +837,8 @@ test("createRecord() resolves with record", function() {
   expect(1);
 
   var data = {id: 1, name: 'Erik'},
-      record = RESTModel.create();
-  
+    record = RESTModel.create();
+
   RESTModel.rootKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -854,8 +854,8 @@ test("saveRecord() resolves with record", function() {
   expect(1);
 
   var data = {id: 1, name: 'Erik'},
-      record = RESTModel.create({name: 'Ray'});
-  
+    record = RESTModel.create({name: 'Ray'});
+
   RESTModel.rootKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
