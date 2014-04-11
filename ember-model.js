@@ -476,7 +476,7 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     if (reference.record) {
       record = reference.record;
     } else {
-      record = klass.create({ _reference: reference });
+      record = klass.create({ _reference: reference, container: container });
       reference.record = record;
       if (attrs) {
         record.load(attrs[primaryKey], attrs);
@@ -1875,13 +1875,14 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
 Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
-    name: "dataAdapter",
+    name: "data-adapter",
 
     initialize: function(container, application) {
-      application.register('dataAdapter:main', DebugAdapter);
+      application.register('data-adapter:main', DebugAdapter);
     }
   });
 });
+
 
 })();
 
