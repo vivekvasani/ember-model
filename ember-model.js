@@ -653,6 +653,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   serializeHasMany: function(key, meta) {
+    if (meta.isAnything) {
+      return this.get(key);
+    }
     return this.get(key).toJSON();
   },
 
@@ -785,7 +788,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       data[this.dataKey(key)] = this.cacheFor(key);
     }
     set(this, '_dirtyAttributes', []);
-    this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
+    //this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
   },
 
   _resetDirtyStateInNestedObjects: function(object) {
@@ -793,8 +796,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if (object._hasManyArrays) {
       for (i = 0; i < object._hasManyArrays.length; i++) {
         var array = object._hasManyArrays[i];
+        array.revert();
         if (array.embedded) {
-          array.revert();
           for (var j = 0; j < array.get('length'); j++) {
             obj = array.objectAt(j);
             obj._copyDirtyAttributesToData();
@@ -1158,7 +1161,7 @@ Ember.Model.reopenClass({
 
   addToRecordArrays: function(record) {
     if (this._findAllRecordArray) {
-      this._findAllRecordArray.pushObject(record);
+      this._findAllRecordArray.addObject(record);
     }
     if (this.recordArrays) {
       this.recordArrays.forEach(function(recordArray) {
@@ -1166,7 +1169,7 @@ Ember.Model.reopenClass({
           recordArray.registerObserversOnRecord(record);
           recordArray.updateFilter();
         } else {
-          recordArray.pushObject(record);
+          recordArray.addObject(record);
         }
       });
     }

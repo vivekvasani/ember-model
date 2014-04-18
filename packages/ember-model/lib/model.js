@@ -157,6 +157,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   serializeHasMany: function(key, meta) {
+    if (meta.isAnything) {
+      return this.get(key);
+    }
     return this.get(key).toJSON();
   },
 
@@ -289,7 +292,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       data[this.dataKey(key)] = this.cacheFor(key);
     }
     set(this, '_dirtyAttributes', []);
-    this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
+    //this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
   },
 
   _resetDirtyStateInNestedObjects: function(object) {
