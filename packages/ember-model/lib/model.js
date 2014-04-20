@@ -129,6 +129,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
         relationshipData = data[relationshipKey];
         if (relationshipData) {
+          relationshipData.container = this.container;
           relationshipType.load(relationshipData);
         }
       }
@@ -349,7 +350,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
           hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));
       if (!reverting) {
         for (j = 0; j < array.get('length'); j++) {
-          if (array.objectAt(j).get('isNew') && !array.objectAt(j).get('isDeleted')) {
+          if (array.objectAt(j).get('isNew') && !array.objectAt(j).get('isDeleted') && array.objectAt(j).get('id') !== hasManyContent.objectAt(j).id) {
             hasManyContent.addObject(array.objectAt(j)._reference);
           }
         }
@@ -781,7 +782,7 @@ Ember.Model.reopenClass({
     for (var i = 0, l = hashes.length; i < l; i++) {
       var hash = hashes[i],
           primaryKey = hash[get(this, 'primaryKey')],
-          record = this.getCachedReferenceRecord(primaryKey);
+          record = this.getCachedReferenceRecord(primaryKey, hashes.container);
 
       if (record) {
         record.load(primaryKey, hash);
