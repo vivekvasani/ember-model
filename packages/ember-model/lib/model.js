@@ -110,7 +110,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
-    this._reloadHasManys();
+    //this._reloadHasManys();
 
     // eagerly load embedded data
     var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, relationshipData, relationshipType;
@@ -334,7 +334,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
           hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));
       if (!reverting) {
         for (j = 0; j < array.get('length'); j++) {
-          if (array.objectAt(j).get('isNew') && !array.objectAt(j).get('isDeleted') && array.objectAt(j).get('id') !== hasManyContent.objectAt(j).id) {
+          if (array.objectAt(j).get('isNew') && !array.objectAt(j).get('isDeleted')) {
             hasManyContent.addObject(array.objectAt(j)._reference);
           }
         }
