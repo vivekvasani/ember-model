@@ -278,6 +278,14 @@ Ember.ManyArray = Ember.RecordArray.extend({
   originalContent: null,
   _modifiedRecords: null,
 
+  unloadObject: function(record) {
+    var obj = get(this, 'content').findBy('clientId', record._reference.clientId);
+    get(this, 'content').removeObject(obj);
+
+    var originalObj = get(this, 'originalContent').findBy('clientId', record._reference.clientId);
+    get(this, 'originalContent').removeObject(originalObj);
+  },
+
   isDirty: function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
@@ -298,7 +306,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }
 
     return isDirty;
-  }.property('content.[]', 'originalContent', '_modifiedRecords.[]'),
+  }.property('content.[]', 'originalContent.[]', '_modifiedRecords.[]'),
 
   objectAtContent: function(idx) {
     var content = get(this, 'content');
@@ -314,6 +322,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
       if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
       Ember.addObserver(content[idx], 'record.isDirty', this, 'recordStateChanged');
+      record.registerParentHasManyArray(this);
     }
 
     return record;
@@ -358,6 +367,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       var currentItem = content[i];
       if (currentItem && currentItem.record) {
         this._modifiedRecords.removeObject(currentItem);
+        currentItem.record.unregisterParentHasManyArray(this);
         Ember.removeObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
       }
     }
@@ -374,6 +384,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
         var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
         if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
         Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        currentItem.record.registerParentHasManyArray(this);
       }
     }
 
@@ -608,7 +619,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
+
+    this.getWithDefault('_dirtyAttributes', []).clear();
+
     //this._reloadHasManys();
+
 
     // eagerly load embedded data
     var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, relationshipData, relationshipType;
@@ -812,7 +827,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         var belongsTo = object._belongsTo[i];
         if (belongsTo.options.embedded) {
           obj = this.get(belongsTo.relationshipKey);
-          obj._copyDirtyAttributesToData();
+          if (obj) {
+            obj._copyDirtyAttributesToData();
+          }
         }
       }
     }
@@ -822,6 +839,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if (!this._hasManyArrays) { this._hasManyArrays = Ember.A([]); }
 
     this._hasManyArrays.pushObject(array);
+  },
+
+  registerParentHasManyArray: function(array) {
+    if (!this._parentHasManyArrays) { this._parentHasManyArrays = Ember.A([]); }
+
+    this._parentHasManyArrays.pushObject(array);
+  },
+
+  unregisterParentHasManyArray: function(array) {
+    if (!this._parentHasManyArrays) { return; }
+
+    this._parentHasManyArrays.removeObject(array);
   },
 
   _reloadHasManys: function(reverting) {
@@ -1177,6 +1206,7 @@ Ember.Model.reopenClass({
   },
 
   unload: function (record) {
+    this.removeFromHasManyArrays(record);
     this.removeFromRecordArrays(record);
     var primaryKey = record.get(get(this, 'primaryKey'));
     this.removeFromCache(primaryKey);
@@ -1194,6 +1224,15 @@ Ember.Model.reopenClass({
     }
     if(this._referenceCache && this._referenceCache[key]) {
       delete this._referenceCache[key];
+    }
+  },
+
+  removeFromHasManyArrays: function(record) {
+    if (record._parentHasManyArrays) {
+      record._parentHasManyArrays.forEach(function(hasManyArray) {
+        hasManyArray.unloadObject(record);
+      });
+      record._parentHasManyArrays = null;
     }
   },
 
@@ -1292,7 +1331,7 @@ Ember.Model.reopenClass({
 
     // if we're creating an item, this process will be done
     // later, once the object has been persisted.
-    if (reference.id) {
+    if (!Ember.isEmpty(reference.id)) {
       this._referenceCache[reference.id] = reference;
     }
   }
@@ -1312,7 +1351,7 @@ function getType(record) {
     this.type = Ember.get(Ember.lookup, this.type);
 
     if (!this.type) {
-      var store = Ember.Model.Store.create({ container: record.container });
+      var store = record.container.lookup('store:main');
       this.type = store.modelFor(type);
       this.type.reopenClass({ adapter: store.adapterFor(type) });
     }
@@ -1369,20 +1408,28 @@ Ember.Model.reopen({
 var get = Ember.get,
     set = Ember.set;
 
+function storeFor(record) {
+  if (record.container) {
+    return record.container.lookup('store:main');
+  }
+
+  return null;
+}
+
 function getType(record) {
   var type = this.type;
 
   if (typeof this.type === "string" && this.type) {
-    this.type = Ember.get(Ember.lookup, this.type);
+    type = Ember.get(Ember.lookup, this.type);
 
-    if (!this.type) {
-      var store = Ember.Model.Store.create({ container: record.container });
-      this.type = store.modelFor(type);
-      this.type.reopenClass({ adapter: store.adapterFor(type) });
+    if (!type) {
+      var store = storeFor(record);
+      type = store.modelFor(this.type);
+      type.reopenClass({ adapter: store.adapterFor(this.type) });
     }
   }
 
-  return this.type;
+  return type;
 }
 
 Ember.belongsTo = function(type, options) {
@@ -1442,7 +1489,8 @@ Ember.belongsTo = function(type, options) {
 
       return value === undefined ? null : value;  
     } else {
-      value = this.getBelongsTo(key, type, meta);
+      var store = storeFor(this);
+      value = this.getBelongsTo(key, type, meta, store);
       this._registerBelongsTo(meta);
       if (value !== null && meta.options.embedded) {
         value.get('isDirty'); // getter must be called before adding observer
@@ -1454,7 +1502,7 @@ Ember.belongsTo = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getBelongsTo: function(key, type, meta) {
+  getBelongsTo: function(key, type, meta, store) {
     var idOrAttrs = get(this, '_data.' + key),
         record;
 
@@ -1468,7 +1516,11 @@ Ember.Model.reopen({
       record = type.create({ isLoaded: false, id: id, container: this.container });
       record.load(id, idOrAttrs);
     } else {
-      record = type.find(idOrAttrs);
+      if (store) {
+        record = store.find(meta.type, idOrAttrs);
+      } else {
+        record = type.find(idOrAttrs);
+      }
     }
 
     return record;
@@ -1647,11 +1699,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didCreateRecord: function(record, data) {
-    var rootKey = get(record.constructor, 'rootKey'),
-        primaryKey = get(record.constructor, 'primaryKey'),
-        dataToLoad = rootKey ? get(data, rootKey) : data;
-        
-    record.load(dataToLoad[primaryKey], dataToLoad);
+    this._loadRecordFromData(record, data);
     record.didCreateRecord();
   },
 
@@ -1667,6 +1715,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didSaveRecord: function(record, data) {
+    this._loadRecordFromData(record, data);
     record.didSaveRecord();
   },
 
@@ -1729,7 +1778,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
       settings.error = function(jqXHR, textStatus, errorThrown) {
         // https://github.com/ebryn/ember-model/issues/202
-        if (jqXHR) {
+        if (jqXHR && typeof jqXHR === 'object') {
           jqXHR.then = null;
         }
 
@@ -1739,6 +1788,15 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
       Ember.$.ajax(settings);
    });
+  },
+
+  _loadRecordFromData: function(record, data) {
+    var rootKey = get(record.constructor, 'rootKey'),
+        primaryKey = get(record.constructor, 'primaryKey'),
+        dataToLoad = rootKey ? get(data, rootKey) : data;
+    if (!Ember.isEmpty(dataToLoad)) {
+      record.load(dataToLoad[primaryKey], dataToLoad);
+    }
   }
 });
 
