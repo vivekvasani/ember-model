@@ -478,7 +478,7 @@ Ember.Model.reopenClass({
     }
 
     if (isFetch) {
-      deferred = Ember.Deferred.create();
+      deferred = Ember.RSVP.defer();
       Ember.set(deferred, 'resolveWith', records);
 
       if (!this._currentBatchDeferreds) { this._currentBatchDeferreds = []; }
@@ -487,7 +487,7 @@ Ember.Model.reopenClass({
 
     Ember.run.scheduleOnce('data', this, this._executeBatch, container);
 
-    return isFetch ? deferred : records;
+    return isFetch ? deferred.promise : records;
   },
 
   findAll: function() {
@@ -584,7 +584,7 @@ Ember.Model.reopenClass({
         this._currentBatchRecordArrays = [];
       }
 
-      deferred = Ember.Deferred.create();
+      deferred = Ember.RSVP.defer();
 
       //Attached the record to the deferred so we can resolve it later.
       Ember.set(deferred, 'resolveWith', record);
@@ -594,7 +594,7 @@ Ember.Model.reopenClass({
 
       Ember.run.scheduleOnce('data', this, this._executeBatch, record.container);
 
-      return deferred;
+      return deferred.promise;
     } else {
       return adapter.find(record, id);
     }
