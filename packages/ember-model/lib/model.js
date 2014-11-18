@@ -97,7 +97,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     if (!reference) {
       reference = this.constructor._getOrCreateReferenceForId(id);
+<<<<<<< HEAD
       set(reference, 'record', this);
+=======
+      Ember.set(reference, 'record', this)
+>>>>>>> Use ember.set to assign record to reference
       this._reference = reference;
     } else if (reference.id !== id) {
       reference.id = id;
