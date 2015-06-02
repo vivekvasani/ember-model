@@ -3,14 +3,10 @@
   "version": "0.0.16",
   "main": "ember-model.js",
   "dependencies": {
-<<<<<<< HEAD
     "ember": "~1.13"
-=======
-    "ember": "~1.9"
->>>>>>> Remove tests that throw reject errors. Need to come back and handle errors more gracefully in the library
   },
   "devDependencies": {
-    "qunit": "~1.15.0"
+    "qunit": "~1.11"
   },
   "ignore": [
     "**/.*",

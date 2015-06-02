@@ -97,15 +97,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     if (!reference) {
       reference = this.constructor._getOrCreateReferenceForId(id);
-<<<<<<< HEAD
-<<<<<<< HEAD
       set(reference, 'record', this);
-=======
-      Ember.set(reference, 'record', this)
->>>>>>> Use ember.set to assign record to reference
-=======
-      Ember.set(reference, 'record', this);
->>>>>>> Added semi colon
       this._reference = reference;
     } else if (reference.id !== id) {
       reference.id = id;
@@ -801,12 +793,7 @@ Ember.Model.reopenClass({
     for (var i = 0, l = hashes.length; i < l; i++) {
       var hash = hashes[i],
           primaryKey = hash[get(this, 'primaryKey')],
-<<<<<<< HEAD
-          record = this.getCachedReferenceRecord(primaryKey, container);
-=======
           record = this.getCachedReferenceRecord(primaryKey, hashes.container);
->>>>>>> Add temporary hacks. Must fix tests
-
       if (record) {
         record.load(primaryKey, hash);
       } else {
