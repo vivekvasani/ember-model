@@ -742,6 +742,36 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   },
 
+  toPartialJSON: function() {
+    var key, meta,
+      json = {},
+      dirtyAttributes = get(this, '_dirtyAttributes'),
+      properties = dirtyAttributes ? this.getProperties(dirtyAttributes) : {},
+      rootKey = get(this.constructor, 'rootKey');
+
+    for (key in properties) {
+      key = this.dataKey(key);
+      meta = this.constructor.metaForProperty(key);
+      if (meta.isRelationship) {
+        json[key] = this.serializeHasMany(key, meta);
+      } else if (meta.type && meta.type.serialize) {
+        json[key] = meta.type.serialize(properties[key]);
+      } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
+        json[key] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+      } else {
+        json[key] = properties[key];
+      }
+    }
+
+    if (rootKey) {
+      var jsonRoot = {};
+      jsonRoot[rootKey] = json;
+      return jsonRoot;
+    } else {
+      return json;
+    }
+  },
+
   save: function() {
     var adapter = this.constructor.adapter;
     set(this, 'isSaving', true);
@@ -1717,9 +1747,42 @@ Ember.attr = function(type, options) {
 
 (function() {
 
+function mustImplement(message) {
+  var fn = function() {
+    var className = this.constructor.toString();
+
+    throw new Error(message.replace('{{className}}', className));
+  };
+  fn.isUnimplemented = true;
+  return fn;
+}
+
+Ember.Serializer = Ember.Object.extend({
+  serialize: mustImplement('{{className}} must implement find')
+});
+
+
+})();
+
+(function() {
+
+Ember.JSONSerializer = Ember.Serializer.extend({
+  serialize: function(record, options) {
+    return record.toJSON();
+  }
+});
+
+
+})();
+
+(function() {
+
 var get = Ember.get;
 
 Ember.RESTAdapter = Ember.Adapter.extend({
+
+  serializer: Ember.JSONSerializer.create(),
+
   find: function(record, id) {
     var url = this.buildURL(record.constructor, id),
         self = this;
@@ -1787,11 +1850,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   saveRecord: function(record) {
+    var data = this.get('serializer').serialize(record);
     var primaryKey = get(record.constructor, 'primaryKey'),
         url = this.buildURL(record.constructor, get(record, primaryKey)),
         self = this;
 
-    return this.ajax(url, record.toJSON(), "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
+    return this.ajax(url, data, "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
       self.didSaveRecord(record, data);
       return record;
     });
@@ -2050,16 +2114,26 @@ Ember.Model.Store = Ember.Object.extend({
   adapterFor: function(type) {
     var adapter = this.modelFor(type).adapter,
         container = this.container;
-
-    if (adapter && adapter !== Ember.Model.adapter) {
+    var serializer = this.serializerFor(type);
+    if (adapter && adapter.constructor !== Ember.Adapter) {
+      adapter.set('serializer', serializer);
       return adapter;
     } else {
       adapter = container.lookupFactory('adapter:'+ type) ||
         container.lookupFactory('adapter:application') ||
-        container.lookupFactory('adapter:REST');
+        Ember.RESTAdapter;
 
-      return adapter ? adapter.create() : adapter;
+      return adapter ? adapter.create({serializer:serializer}) : adapter;
     }
+  },
+
+  serializerFor: function(type) {
+    var container = this.container;
+    var serializer = container.lookupFactory('serializer:'+ type) ||
+      container.lookupFactory('serializer:application') ||
+      Ember.JSONSerializer;
+
+    return serializer ? serializer.create() : serializer;
   },
 
   createRecord: function(type, props) {

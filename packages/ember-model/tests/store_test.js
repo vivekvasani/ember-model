@@ -233,3 +233,28 @@ test("Registering a custom store on application works", function() {
 
   Ember.run(App, 'destroy');
 });
+
+test("store.serializerFor(type) returns type serializer by default", function() {
+  var TestSerializer =  Ember.Object.extend({});
+
+  registry.register('serializer:test', TestSerializer);
+
+  var serializer = Ember.run(store, store.serializerFor, 'test');
+  ok(serializer instanceof TestSerializer);
+});
+
+test("store.serializerFor(type) defaults to JSONSerializer if no serializer is specified", function() {
+  registry.register('serializer:test', null);
+  registry.register('serializer:application', null);
+  registry.register('serializer:JSON',  Ember.JSONSerializer);
+  var serializer = Ember.run(store, store.serializerFor, 'test');
+  ok(serializer instanceof Ember.JSONSerializer);
+});
+
+test("store.adapterFor returns an adapter with a serializer", function() {
+  var TestSerializer =  Ember.Object.extend({});
+  registry.register('serializer:test', TestSerializer);
+
+  var adapter = Ember.run(store, store.adapterFor, 'test');
+  ok(adapter.get('serializer') instanceof TestSerializer);
+});

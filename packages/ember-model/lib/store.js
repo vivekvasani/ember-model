@@ -10,16 +10,26 @@ Ember.Model.Store = Ember.Object.extend({
   adapterFor: function(type) {
     var adapter = this.modelFor(type).adapter,
         container = this.container;
-
-    if (adapter && adapter !== Ember.Model.adapter) {
+    var serializer = this.serializerFor(type);
+    if (adapter && adapter.constructor !== Ember.Adapter) {
+      adapter.set('serializer', serializer);
       return adapter;
     } else {
       adapter = container.lookupFactory('adapter:'+ type) ||
         container.lookupFactory('adapter:application') ||
-        container.lookupFactory('adapter:REST');
+        Ember.RESTAdapter;
 
-      return adapter ? adapter.create() : adapter;
+      return adapter ? adapter.create({serializer:serializer}) : adapter;
     }
+  },
+
+  serializerFor: function(type) {
+    var container = this.container;
+    var serializer = container.lookupFactory('serializer:'+ type) ||
+      container.lookupFactory('serializer:application') ||
+      Ember.JSONSerializer;
+
+    return serializer ? serializer.create() : serializer;
   },
 
   createRecord: function(type, props) {

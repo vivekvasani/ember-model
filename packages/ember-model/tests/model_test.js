@@ -960,3 +960,26 @@ test(".clearCache destroys _findAllRecordArray reference", function() {
 // test('Model#unregisterRecordArray', function(){
 
 // });
+test("toPartialJSON returns a json of only dirty properties", function() {
+  expect(3);
+
+  var Comment = Ember.Model.extend();
+  var Rating = Ember.Model.extend();
+
+  var Article = Ember.Model.extend({
+    author: Ember.attr(),
+    title: Ember.attr(),
+    comments: Ember.hasMany(Comment, { embedded: true}),
+    ratings: Ember.hasMany(Rating, { embedded: true})
+  });
+
+  var article = Article.create({});
+  equal(Ember.keys(article.toPartialJSON()).length, 0, 'new records should return empty object');
+
+  article.set('author', 'Rob Stark');
+  var comment = Comment.create({description:'Is he really dead?'});
+  article.get('comments').pushObject(comment);
+  var json = article.toPartialJSON();
+  ok(json.author, 'author is returned');
+  ok(json.comments[0], 'comments is returned');
+});

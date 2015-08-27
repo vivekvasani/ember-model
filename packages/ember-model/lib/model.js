@@ -230,6 +230,36 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   },
 
+  toPartialJSON: function() {
+    var key, meta,
+      json = {},
+      dirtyAttributes = get(this, '_dirtyAttributes'),
+      properties = dirtyAttributes ? this.getProperties(dirtyAttributes) : {},
+      rootKey = get(this.constructor, 'rootKey');
+
+    for (key in properties) {
+      key = this.dataKey(key);
+      meta = this.constructor.metaForProperty(key);
+      if (meta.isRelationship) {
+        json[key] = this.serializeHasMany(key, meta);
+      } else if (meta.type && meta.type.serialize) {
+        json[key] = meta.type.serialize(properties[key]);
+      } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
+        json[key] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+      } else {
+        json[key] = properties[key];
+      }
+    }
+
+    if (rootKey) {
+      var jsonRoot = {};
+      jsonRoot[rootKey] = json;
+      return jsonRoot;
+    } else {
+      return json;
+    }
+  },
+
   save: function() {
     var adapter = this.constructor.adapter;
     set(this, 'isSaving', true);

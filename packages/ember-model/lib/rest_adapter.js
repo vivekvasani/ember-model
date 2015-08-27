@@ -1,8 +1,12 @@
 require('ember-model/adapter');
+require('ember-model/json_serializer');
 
 var get = Ember.get;
 
 Ember.RESTAdapter = Ember.Adapter.extend({
+
+  serializer: Ember.JSONSerializer.create(),
+
   find: function(record, id) {
     var url = this.buildURL(record.constructor, id),
         self = this;
@@ -70,11 +74,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   saveRecord: function(record) {
+    var data = this.get('serializer').serialize(record);
     var primaryKey = get(record.constructor, 'primaryKey'),
         url = this.buildURL(record.constructor, get(record, primaryKey)),
         self = this;
 
-    return this.ajax(url, record.toJSON(), "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
+    return this.ajax(url, data, "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
       self.didSaveRecord(record, data);
       return record;
     });

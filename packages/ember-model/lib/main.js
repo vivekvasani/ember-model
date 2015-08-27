@@ -12,3 +12,5 @@ require('ember-model/rest_adapter');
 require('ember-model/load_promise');
 require('ember-model/debug_adapter');
 require('ember-model/store');
+require('ember-model/serializer');
+require('ember-model/json_serializer');

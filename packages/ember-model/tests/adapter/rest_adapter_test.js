@@ -881,3 +881,4 @@ test("buildURL() creates url from model's url, id, and url suffix", function() {
   url = adapter.buildURL(RESTModel, "123");
   equal(url, "/posts/123.json" );
 });
+
