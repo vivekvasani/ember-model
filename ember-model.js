@@ -1767,6 +1767,11 @@ Ember.Serializer = Ember.Object.extend({
 (function() {
 
 Ember.JSONSerializer = Ember.Serializer.extend({
+
+  normalize: function(typeClass, hash) {
+    return hash;
+  },
+
   serialize: function(record, options) {
     return record.toJSON();
   }
@@ -1797,7 +1802,9 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var rootKey = get(record.constructor, 'rootKey'),
         dataToLoad = rootKey ? get(data, rootKey) : data;
 
-    record.load(id, dataToLoad);
+    var normalizedData = this.get('serializer').normalize(record.constructor, dataToLoad);
+
+    record.load(id, normalizedData);
   },
 
   findAll: function(klass, records) {
