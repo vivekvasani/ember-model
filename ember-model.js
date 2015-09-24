@@ -1842,10 +1842,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   createRecord: function(record) {
+    var data = this.get('serializer').serialize(record);
     var url = this.buildURL(record.constructor),
-        self = this;
+      self = this;
 
-    return this.ajax(url, record.toJSON(), "POST").then(function(data) {
+    return this.ajax(url, data, "POST").then(function(data) {
       self.didCreateRecord(record, data);
       return record;
     });
