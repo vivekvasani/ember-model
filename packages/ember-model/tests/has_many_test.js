@@ -156,6 +156,9 @@ test("toJSON uses the given relationship key", function() {
         comments: Ember.hasMany(Comment, { key: 'comment_ids' })
       });
 
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Article.adapter = Ember.FixtureAdapter.create();
+
   Comment.primaryKey = 'token';
 
   var article = Article.create();
@@ -270,6 +273,8 @@ test("key defaults to model's property key", function() {
       comments: Ember.hasMany(Comment)
     });
 
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Article.adapter = Ember.FixtureAdapter.create();
   var article = Article.create();
 
   Ember.run(article, article.load, 1, { comments: Ember.A(['a'] )});

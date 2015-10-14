@@ -167,10 +167,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   serializeHasMany: function(key, meta) {
+    var content = this.get(key);
     if (meta.isAnything) {
-      return this.get(key);
+      return content;
     }
-    return this.get(key).toJSON();
+    content.trimEmptyRecords();
+    return content.toJSON();
   },
 
   serializeBelongsTo: function(key, meta) {

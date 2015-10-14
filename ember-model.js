@@ -437,6 +437,28 @@ Ember.ManyArray = Ember.RecordArray.extend({
         parent._relationshipBecameClean(relationshipKey);
       }
     }
+  },
+
+  isEmpty: function(value) {
+    return !Object.keys(value).some(function(k) {
+      if (value[k] instanceof Array) {
+        return value[k].length;
+      }
+      return value[k];
+    });
+  },
+
+  trimEmptyRecords: function() {
+    var emptyObjects = [];
+    for (var i = 0; i < this.get('length'); i++) {
+      var record = this.objectAt(i);
+      if (this.isEmpty(record.toJSON())) {
+        emptyObjects.pushObject(record);
+      }
+    }
+    emptyObjects.forEach(function (o) {
+      this.unloadObject(o);
+    }, this);
   }
 });
 
@@ -679,10 +701,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   serializeHasMany: function(key, meta) {
+    var content = this.get(key);
     if (meta.isAnything) {
-      return this.get(key);
+      return content;
     }
-    return this.get(key).toJSON();
+    content.trimEmptyRecords();
+    return content.toJSON();
   },
 
   serializeBelongsTo: function(key, meta) {

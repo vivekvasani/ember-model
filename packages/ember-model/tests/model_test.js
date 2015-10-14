@@ -963,7 +963,9 @@ test(".clearCache destroys _findAllRecordArray reference", function() {
 test("toPartialJSON returns a json of only dirty properties", function() {
   expect(3);
 
-  var Comment = Ember.Model.extend();
+  var Comment = Ember.Model.extend({
+    description:Ember.attr()
+  });
   var Rating = Ember.Model.extend();
 
   var Article = Ember.Model.extend({
