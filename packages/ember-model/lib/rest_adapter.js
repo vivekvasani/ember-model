@@ -170,8 +170,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     // handle HEAD response where no data is provided by server
     if (data) {
       data = rootKey ? get(data, rootKey) : data;
+
+      var normalizedData = this.get('serializer').normalize(record.constructor, data);
+
       if (!Ember.isEmpty(data)) {
-        record.load(data[primaryKey], data);
+        record.load(data[primaryKey], normalizedData);
       }
     }
   }

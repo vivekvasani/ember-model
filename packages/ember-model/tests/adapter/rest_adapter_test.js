@@ -882,3 +882,106 @@ test("buildURL() creates url from model's url, id, and url suffix", function() {
   equal(url, "/posts/123.json" );
 });
 
+test("didFind calls normalize", function() {
+  expect(1);
+
+  var serializer = Ember.JSONSerializer.extend({
+    normalize: function(typeClass, hash) {
+      return {
+        id: 1,
+        'name': 'normalized'
+      };
+    }
+  });
+
+  adapter.set('serializer', serializer.create({}));
+
+  var data = {
+      id: 1,
+      name: "Erik"
+  };
+  var record;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  RESTModel.adapter = adapter;
+
+  Ember.run(function() {
+    record = RESTModel.find(1);
+  });
+
+  equal(record.get('name'), 'normalized');
+});
+
+
+test("didSaveRecord calls normalize", function() {
+  expect(1);
+
+  var serializer = Ember.JSONSerializer.extend({
+    normalize: function(typeClass, hash) {
+      return {
+        id: 1,
+        'name': 'normalized'
+      };
+    }
+  });
+
+  adapter.set('serializer', serializer.create({}));
+
+  var data = {
+    id: 1,
+    name: "Erik"
+  };
+
+  RESTModel.adapter = adapter;
+  RESTModel.rootKey = undefined;
+  var record = Ember.run(RESTModel, RESTModel.create, data);
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    adapter.saveRecord(record);
+  });
+
+  equal(record.get('name'), 'normalized');
+
+});
+
+
+test("didCreateRecord calls normalize", function() {
+  expect(1);
+
+  var serializer = Ember.JSONSerializer.extend({
+    normalize: function(typeClass, hash) {
+      return {
+        id: 1,
+        'name': 'normalized'
+      };
+    }
+  });
+
+  adapter.set('serializer', serializer.create({}));
+
+  var data = {
+    id: 1,
+    name: "Erik"
+  };
+  var record = Ember.run(RESTModel, RESTModel.create, data);
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  RESTModel.adapter = adapter;
+  RESTModel.rootKey = undefined;
+
+  Ember.run(function() {
+    adapter.createRecord(record);
+  });
+
+  equal(record.get('name'), 'normalized');
+});

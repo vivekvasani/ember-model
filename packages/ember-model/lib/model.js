@@ -413,7 +413,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       } else {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
-      content = Object.keys(content).map(function (key) {
+
+      var keys = Object.keys(content).removeObject('container');
+      content = keys.map(function (key) {
         return mapFunction(content[key]);
       });
     }
