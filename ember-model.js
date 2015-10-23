@@ -925,7 +925,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       } else {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
-      content = Object.keys(content).map(function (key) {
+
+      var keys = Object.keys(content).removeObject('container');
+      content = keys.map(function (key) {
         return mapFunction(content[key]);
       });
     }
@@ -1953,8 +1955,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     // handle HEAD response where no data is provided by server
     if (data) {
       data = rootKey ? get(data, rootKey) : data;
+
+      var normalizedData = this.get('serializer').normalize(record.constructor, data);
+
       if (!Ember.isEmpty(data)) {
-        record.load(data[primaryKey], data);
+        record.load(data[primaryKey], normalizedData);
       }
     }
   }
