@@ -2130,7 +2130,8 @@ Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: "data-adapter",
 
-    initialize: function(container, application) {
+    initialize: function() {
+      var application = arguments[1] || arguments[0];
       application.register('data-adapter:main', DebugAdapter);
     }
   });
@@ -2214,7 +2215,8 @@ Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: "store",
 
-    initialize: function(_, application) {
+    initialize: function() {
+      var application = arguments[1] || arguments[0];
       var store = application.Store || Ember.Model.Store;
       application.register('store:application', store);
       application.register('store:main', store);
