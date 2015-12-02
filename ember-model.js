@@ -471,7 +471,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 
     if (record) {
       if (! record.container) {
-        record.container = container;
+        Ember.setOwner(record, container);
       }
       return record;
     }
@@ -512,14 +512,13 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     if (reference.record) {
       record = reference.record;
     } else {
-      record = klass.create({ _reference: reference, container: container });
+      record = klass.create({ _reference: reference });
       reference.record = record;
       if (attrs) {
         record.load(attrs[primaryKey], attrs);
       }
     }
-
-    record.container = container;
+    Ember.setOwner(record, container);
     return record;
   },
 
@@ -1234,7 +1233,7 @@ Ember.Model.reopenClass({
     var ref = this._getReferenceById(id);
     if(ref && ref.record) {
       if (! ref.record.container) {
-        ref.record.container = container;
+        Ember.setOwner(ref.record, container);
       }
       return ref.record;
     }
@@ -1252,8 +1251,8 @@ Ember.Model.reopenClass({
           attrs = {isLoaded: false};
 
       attrs[primaryKey] = id;
-      attrs.container = container;
       record = this.create(attrs);
+      Ember.setOwner(record, container);
       if (!this.transient) {
         var sideloadedData = this.sideloadedData && this.sideloadedData[id];
         if (sideloadedData) {

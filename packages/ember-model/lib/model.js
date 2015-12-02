@@ -700,7 +700,7 @@ Ember.Model.reopenClass({
     var ref = this._getReferenceById(id);
     if(ref && ref.record) {
       if (! ref.record.container) {
-        ref.record.container = container;
+        Ember.setOwner(ref.record, container);
       }
       return ref.record;
     }
@@ -718,8 +718,8 @@ Ember.Model.reopenClass({
           attrs = {isLoaded: false};
 
       attrs[primaryKey] = id;
-      attrs.container = container;
       record = this.create(attrs);
+      Ember.setOwner(record, container);
       if (!this.transient) {
         var sideloadedData = this.sideloadedData && this.sideloadedData[id];
         if (sideloadedData) {

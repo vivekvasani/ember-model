@@ -194,7 +194,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 
     if (record) {
       if (! record.container) {
-        record.container = container;
+        Ember.setOwner(record, container);
       }
       return record;
     }
@@ -235,14 +235,13 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     if (reference.record) {
       record = reference.record;
     } else {
-      record = klass.create({ _reference: reference, container: container });
+      record = klass.create({ _reference: reference });
       reference.record = record;
       if (attrs) {
         record.load(attrs[primaryKey], attrs);
       }
     }
-
-    record.container = container;
+    Ember.setOwner(record, container);
     return record;
   },
 
