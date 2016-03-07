@@ -1229,21 +1229,21 @@ Ember.Model.reopenClass({
     });
   },
 
-  getCachedReferenceRecord: function(id, container){
+  getCachedReferenceRecord: function(id, owner){
     var ref = this._getReferenceById(id);
     if(ref && ref.record) {
       if (! ref.record.container) {
-        Ember.setOwner(ref.record, container);
+        Ember.setOwner(ref.record, owner);
       }
       return ref.record;
     }
     return undefined;
   },
 
-  cachedRecordForId: function(id, container) {
+  cachedRecordForId: function(id, owner) {
     var record;
     if (!this.transient) {
-      record = this.getCachedReferenceRecord(id, container);
+      record = this.getCachedReferenceRecord(id, owner);
     }
 
     if (!record) {
@@ -1252,7 +1252,7 @@ Ember.Model.reopenClass({
 
       attrs[primaryKey] = id;
       record = this.create(attrs);
-      Ember.setOwner(record, container);
+      Ember.setOwner(record, owner);
       if (!this.transient) {
         var sideloadedData = this.sideloadedData && this.sideloadedData[id];
         if (sideloadedData) {
@@ -1474,7 +1474,8 @@ function getType(record) {
     this.type = get(Ember.lookup, this.type);
 
     if (!this.type) {
-      var store = record.container.lookup('store:main');
+      var owner = Ember.getOwner(record);
+      var store = owner.lookup('store:main');
       this.type = store.modelFor(type);
       this.type.reopenClass({ adapter: store.adapterFor(type) });
     }
@@ -1494,7 +1495,8 @@ Ember.hasMany = function(type, options) {
       Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
 
       var key = options.key || propertyKey;
-      return this.getHasMany(key, type, meta, this.container);
+      var owner = Ember.getOwner(this);
+      return this.getHasMany(key, type, meta, owner);
     },
     set: function(propertyKey, newContentArray, existingArray) {
       return existingArray.setObjects(newContentArray);
@@ -2147,19 +2149,20 @@ Ember.Model.Store = Ember.Object.extend({
   container: null,
 
   modelFor: function(type) {
-    return this.container.lookupFactory('model:'+type);
+    var owner = Ember.getOwner(this);
+    return owner._lookupFactory('model:'+type);
   },
 
   adapterFor: function(type) {
     var adapter = this.modelFor(type).adapter,
-        container = this.container;
+        owner = Ember.getOwner(this);
     var serializer = this.serializerFor(type);
     if (adapter && adapter.constructor !== Ember.Adapter) {
       adapter.set('serializer', serializer);
       return adapter;
     } else {
-      adapter = container.lookupFactory('adapter:'+ type) ||
-        container.lookupFactory('adapter:application') ||
+      adapter = owner._lookupFactory('adapter:'+ type) ||
+        owner._lookupFactory('adapter:application') ||
         Ember.RESTAdapter;
 
       return adapter ? adapter.create({serializer:serializer}) : adapter;
@@ -2167,9 +2170,9 @@ Ember.Model.Store = Ember.Object.extend({
   },
 
   serializerFor: function(type) {
-    var container = this.container;
-    var serializer = container.lookupFactory('serializer:'+ type) ||
-      container.lookupFactory('serializer:application') ||
+    var owner = Ember.getOwner(this);
+    var serializer = owner._lookupFactory('serializer:'+ type) ||
+      owner._lookupFactory('serializer:application') ||
       Ember.JSONSerializer;
 
     return serializer ? serializer.create() : serializer;
@@ -2177,8 +2180,9 @@ Ember.Model.Store = Ember.Object.extend({
 
   createRecord: function(type, props) {
     var klass = this.modelFor(type);
+    var owner = Ember.getOwner(this);
     klass.reopenClass({adapter: this.adapterFor(type)});
-    return klass.create(Ember.merge({container: this.container}, props));
+    return klass.create(Ember.merge({owner: owner}, props));
   },
 
   find: function(type, id) {
@@ -2193,14 +2197,15 @@ Ember.Model.Store = Ember.Object.extend({
       klass.reopenClass({adapter: this.adapterFor(type)});
     // }
 
+    var owner = Ember.getOwner(this);
     if (id === NIL) {
-      return klass._findFetchAll(async, this.container);
+      return klass._findFetchAll(async, owner);
     } else if (Ember.isArray(id)) {
-      return klass._findFetchMany(id, async, this.container);
+      return klass._findFetchMany(id, async, owner);
     } else if (typeof id === 'object') {
-      return klass._findFetchQuery(id, async, this.container);
+      return klass._findFetchQuery(id, async, owner);
     } else {
-      return klass._findFetchById(id, async, this.container);
+      return klass._findFetchById(id, async, owner);
     }
   },
 

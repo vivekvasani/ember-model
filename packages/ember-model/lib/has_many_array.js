@@ -43,7 +43,8 @@ Ember.ManyArray = Ember.RecordArray.extend({
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
-    var record = this.materializeRecord(idx, this.container);
+    var owner = Ember.getOwner(this);
+    var record = this.materializeRecord(idx, owner);
 
     if (observerNeeded) {
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
@@ -186,7 +187,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
 });
 
 Ember.HasManyArray = Ember.ManyArray.extend({
-  materializeRecord: function(idx, container) {
+  materializeRecord: function(idx, owner) {
     var klass = get(this, 'modelClass'),
         content = get(this, 'content'),
         reference = content.objectAt(idx),
@@ -194,11 +195,11 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 
     if (record) {
       if (! record.container) {
-        Ember.setOwner(record, container);
+        Ember.setOwner(record, owner);
       }
       return record;
     }
-    return klass._findFetchById(reference.id, false, container);
+    return klass._findFetchById(reference.id, false, owner);
   },
 
   toJSON: function() {
@@ -224,7 +225,7 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     return record; // FIXME: inject parent's id
   },
 
-  materializeRecord: function(idx, container) {
+  materializeRecord: function(idx, owner) {
     var klass = get(this, 'modelClass'),
         primaryKey = get(klass, 'primaryKey'),
         content = get(this, 'content'),
@@ -241,7 +242,7 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
         record.load(attrs[primaryKey], attrs);
       }
     }
-    Ember.setOwner(record, container);
+    Ember.setOwner(record, owner);
     return record;
   },
 
