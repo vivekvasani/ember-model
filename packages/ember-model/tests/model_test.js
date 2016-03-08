@@ -988,7 +988,7 @@ test("toPartialJSON returns a json of only dirty properties", function() {
   });
 
   var article = Article.create({});
-  equal(Ember.keys(article.toPartialJSON()).length, 0, 'new records should return empty object');
+  equal(Object.keys(article.toPartialJSON()).length, 0, 'new records should return empty object');
 
   article.set('author', 'Rob Stark');
   var comment = Comment.create({description:'Is he really dead?'});
