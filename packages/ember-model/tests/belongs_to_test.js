@@ -722,24 +722,31 @@ test("key defaults to model's property key", function() {
   deepEqual(comment.toJSON(), { article: 2 });
 });
 
-// test("non embedded belongsTo should return a record with a container", function() {
-//   var App;
-//   Ember.run(function() {
-//     App = Ember.Application.create({});
-//   });
-//   App.Article = Ember.Model.extend({
-//     id: Ember.attr(String)
-//   });
-//   App.Comment = Ember.Model.extend({
-//     article: Ember.belongsTo('article', { key: 'article_slug' })
-//   });
-//
-//   App.Article.adapter = Ember.FixtureAdapter.create();
-//   App.Article.FIXTURES = [{ id: 'first-article' }];
-//
-//   var comment = App.Comment.create({container: App.__container__});
-//   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
-//   var article = Ember.run(comment, comment.get, 'article');
-//   ok(article.get('container'));
-//   Ember.run(App, 'destroy');
-// });
+test("non embedded belongsTo should return a record with an owner", function() {
+  var owner = buildOwner();
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+  App.Article = Ember.Model.extend({
+    id: Ember.attr(String)
+  });
+  App.Comment = Ember.Model.extend({
+    article: Ember.belongsTo('article', { key: 'article_slug' })
+  });
+
+  App.Article.adapter = Ember.FixtureAdapter.create();
+  App.Article.FIXTURES = [{ id: 'first-article' }];
+
+  owner.register('model:article', App.Article);
+  owner.register('model:comment', App.Comment);
+  owner.register('store:main', Ember.Model.Store);
+
+  var comment = App.Comment.create();
+  Ember.setOwner(comment, owner);
+
+  Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
+  var article = Ember.run(comment, comment.get, 'article');
+  ok(Ember.getOwner(article));
+  Ember.run(App, 'destroy');
+});

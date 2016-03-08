@@ -1,5 +1,18 @@
 var Model, ModelWithoutID;
 
+function buildOwner() {
+  var Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin, {
+    init: function() {
+      this._super.apply(arguments);
+      var registry = new Ember.Registry(this._registryOptions);
+      this.__registry__ = registry;
+      this.__container__ = registry.container({ owner: this });
+    }
+  });
+
+  return Owner.create();
+}
+
 module("Ember.Model", {
   setup: function() {
     Model = Ember.Model.extend({
@@ -626,32 +639,31 @@ test("toJSON includes non-embedded relationships", function() {
 });
 
 test("toJSON works with string names", function() {
+  var owner = buildOwner();
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
   });
 
   var Comment = Ember.Model.extend({
-        container: App.__container__,
         id: Ember.attr(),
         text: Ember.attr()
       }),
       Author = Ember.Model.extend({
-        container: App.__container__,
         id: Ember.attr(),
         name: Ember.attr()
       }),
       Article = Ember.Model.extend({
-        container: App.__container__,
         id: 1,
         title: Ember.attr(),
         comments: Ember.hasMany('comment', { key: 'comments' }),
         author: Ember.belongsTo('author', { key: 'author' })
       });
 
-  App.registry.register('model:comment', Comment);
-  App.registry.register('model:author', Author);
-  App.registry.register('model:article', Article);
+  owner.register('model:comment', Comment);
+  owner.register('model:author', Author);
+  owner.register('model:article', Article);
+  owner.register('store:main', Ember.Model.Store);
 
   var articleData = {
     id: 1,
@@ -672,6 +684,8 @@ test("toJSON works with string names", function() {
 
 
   var article = Article.create();
+  Ember.setOwner(article, owner);
+
   Ember.run(article, article.load, articleData.id, articleData);
 
   var json = Ember.run(article, article.toJSON);

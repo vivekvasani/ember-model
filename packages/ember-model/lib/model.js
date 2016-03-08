@@ -281,8 +281,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   reload: function() {
+    var owner = Ember.getOwner(this);
     this.getWithDefault('_dirtyAttributes', []).clear();
-    return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')), this.container);
+    return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')), owner);
   },
 
   revert: function() {
@@ -620,8 +621,8 @@ Ember.Model.reopenClass({
   _currentBatchRecordArrays: null,
   _currentBatchDeferreds: null,
 
-  reload: function(id, container) {
-    var record = this.cachedRecordForId(id, container);
+  reload: function(id, owner) {
+    var record = this.cachedRecordForId(id, owner);
     record.set('isLoaded', false);
     return this._fetchById(record, id);
   },
@@ -802,13 +803,14 @@ Ember.Model.reopenClass({
   },
 
   // FIXME
-  findFromCacheOrLoad: function(data, container) {
+  findFromCacheOrLoad: function(data, owner) {
     var record;
     if (!data[get(this, 'primaryKey')]) {
-      record = this.create({isLoaded: false, container: container});
+      record = this.create({isLoaded: false});
     } else {
-      record = this.cachedRecordForId(data[get(this, 'primaryKey')], container);
+      record = this.cachedRecordForId(data[get(this, 'primaryKey')], owner);
     }
+    Ember.setOwner(record, owner);
     // set(record, 'data', data);
     record.load(data[get(this, 'primaryKey')], data);
     return record;
