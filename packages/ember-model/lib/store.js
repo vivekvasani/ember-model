@@ -1,6 +1,6 @@
 function NIL() {}
 
-Ember.Model.Store = Ember.Object.extend({
+Ember.Model.Store = Ember.Service.extend({
 
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
@@ -78,11 +78,10 @@ Ember.onLoad('Ember.Application', function(Application) {
     initialize: function() {
       var application = arguments[1] || arguments[0];
       var store = application.Store || Ember.Model.Store;
-      application.register('store:application', store);
-      application.register('store:main', store);
+      application.register('service:store', store);
 
-      application.inject('route', 'store', 'store:main');
-      application.inject('controller', 'store', 'store:main');
+      application.inject('route', 'store', 'service:store');
+      application.inject('controller', 'store', 'service:store');
     }
   });
 

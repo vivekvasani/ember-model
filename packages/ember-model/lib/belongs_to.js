@@ -5,7 +5,7 @@ var get = Ember.get,
 function storeFor(record) {
   var owner = Ember.getOwner(record);
   if (owner) {
-    return owner.lookup('store:main');
+    return owner.lookup('service:store');
   }
 
   return null;

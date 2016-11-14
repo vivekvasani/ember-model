@@ -9,7 +9,7 @@ function getType(record) {
 
     if (!this.type) {
       var owner = Ember.getOwner(record);
-      var store = owner.lookup('store:main');
+      var store = owner.lookup('service:store');
       this.type = store.modelFor(type);
       this.type.reopenClass({ adapter: store.adapterFor(type) });
     }
