@@ -1,0 +1,10 @@
+# Change Log
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+## [0.1.0] 2016-12-12
+- [#1](https://github.com/CondeNast/ember-model/pull/1) [Feature] Add support for embedded polymorphic models
+
+[unreleased]: https://github.com/CondeNast/ember-model/compare/0.1.0...HEAD
+[6.11.6]: https://github.com/CondeNast/copilot/compare/5048d371216868dee1fbf2870eb1bf2ac546da22...0.1.0
