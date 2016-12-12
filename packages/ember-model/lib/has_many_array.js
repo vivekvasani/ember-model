@@ -217,30 +217,53 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 
 Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
   create: function(attrs) {
-    var klass = get(this, 'modelClass'),
-        record = klass.create(attrs);
+    var klass = get(this, 'modelClass');
+    var isPolymorphic = get(this, 'polymorphic');
+    var owner;
+    var record;
+    var store;
+    var type;
 
+    if (isPolymorphic) {
+      Ember.assert('The class ' + klass.toString() + ' is missing the polymorphicType implementation.', klass.polymorphicType);
+      owner = Ember.getOwner(this);
+      store = owner.lookup('service:store');
+      type =  klass.polymorphicType(attrs);
+      klass = store.modelFor(type);
+    }
+
+    record = klass.create(attrs);
     this.pushObject(record);
 
     return record; // FIXME: inject parent's id
   },
 
   materializeRecord: function(idx, owner) {
-    var klass = get(this, 'modelClass'),
-        primaryKey = get(klass, 'primaryKey'),
-        content = get(this, 'content'),
-        reference = content.objectAt(idx),
-        attrs = reference.data;
+    var content = get(this, 'content');
+    var reference = content.objectAt(idx);
+    var attrs = reference.data;
+    var isPolymorphic = get(this, 'polymorphic');
+    var klass = get(this, 'modelClass');
+    var primaryKey;
+    var type;
+    var store;
 
     var record;
     if (reference.record) {
       record = reference.record;
       Ember.setOwner(record, owner);
     } else {
+      if (isPolymorphic) {
+        Ember.assert('The class ' + klass.toString() + ' is missing the polymorphicType implementation.', klass.polymorphicType);
+        store = owner.lookup('service:store');
+        type =  klass.polymorphicType(attrs);
+        klass = store.modelFor(type);
+      }
       record = klass.create({ _reference: reference });
       reference.record = record;
       Ember.setOwner(record, owner);
       if (attrs) {
+        primaryKey = get(klass, 'primaryKey');
         record.load(attrs[primaryKey], attrs);
       }
     }
