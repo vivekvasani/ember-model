@@ -845,6 +845,8 @@ Ember.Model.reopenClass({
           record = this.getCachedReferenceRecord(primaryKey, owner);
       if (record) {
         record.load(primaryKey, hash);
+        var store = 
+        this.reopenClass({adapter:store.adapterFor(record.type)});
       } else {
         this.sideloadedData[primaryKey] = hash;
       }

@@ -1,6 +1,21 @@
 var attr = Ember.attr;
+var store;
+var owner;
 
 module("Ember.Model sideloading");
+
+function buildOwner() {
+  var Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin, {
+    init: function() {
+      this._super.apply(arguments);
+      var registry = new Ember.Registry(this._registryOptions);
+      this.__registry__ = registry;
+      this.__container__ = registry.container({ owner: this });
+    }
+  });
+
+  return Owner.create();
+}
 
 test("data can be sideloaded without materializing records", function() {
   expect(3);
@@ -49,11 +64,16 @@ test("sideloading works with camelized attributes", function() {
 
 test("sideloading clears sideload and record cache", function() {
   expect(6);
+  owner = buildOwner();
+  store = Ember.Model.Store.create();
+  Ember.setOwner(store, owner);
+  owner.register('service:store', Ember.Model.Store);
 
   var Model = Ember.Model.extend({
     id: attr(),
     name: attr(),
-    worth: attr()
+    worth: attr(),
+    type: 'contributor'
   });
 
   Model.adapter = {
@@ -62,7 +82,7 @@ test("sideloading clears sideload and record cache", function() {
     }
   };
 
-  Model.load([{id: 1, name: "Erik", worth: 123456789}]);
+  Model.load([{id: 1, name: "Erik", worth: 123456789}], owner);
 
   var record;
   Ember.run(function() {
@@ -74,7 +94,7 @@ test("sideloading clears sideload and record cache", function() {
   strictEqual(record.get('name'), "Erik", "Record name retained successfully");
   strictEqual(record.get('worth'), 123456789, "Record worth retained successfully");
 
-  Model.load([{id: 1, name: "Erik", worth: 987654321}]);
+  Model.load([{id: 1, name: "Erik", worth: 987654321}], owner);
 
   Ember.run(function() {
     record = Model.find(1);
