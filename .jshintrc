@@ -24,12 +24,12 @@
         "module",
         "expect",
         "minispade",
-        "expectAssertion"
+        "expectAssertion",
+        "buildOwner"
     ],
 
     "node" : false,
     "browser" : true,
-
     "boss" : true,
     "curly": false,
     "debug": false,

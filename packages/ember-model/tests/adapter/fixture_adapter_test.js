@@ -1,12 +1,19 @@
-var FixtureModel, adapter;
+var FixtureModel, adapter, store, registry, owner, App;
 
 module("Ember.FixtureAdapter", {
   setup: function() {
     FixtureModel = Ember.Model.extend({
+      type: 'test',
       id: Ember.attr(),
       name: Ember.attr()
     });
     adapter = FixtureModel.adapter = Ember.FixtureAdapter.create();
+    owner = buildOwner();
+    Ember.setOwner(FixtureModel, owner);
+    store = Ember.Model.Store.create();
+    Ember.setOwner(store, owner);
+    owner.register('model:test', FixtureModel);
+    owner.register('service:store', Ember.Model.Store);
   }
 });
 
@@ -18,8 +25,7 @@ test("fetch loads the full FIXTURES payload when id isn't specified", function()
       {id: 2, name: 'Aaron'}
     ];
     
-  FixtureModel.FIXTURES = data;
-
+  FixtureModel.FIXTURES = data; 
   FixtureModel.fetch().then(function(records) {
     start();
     equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
@@ -70,7 +76,6 @@ test("createRecord", function() {
   FixtureModel.FIXTURES = [];
 
   var record = FixtureModel.create({name: "Erik"});
-
   ok(record.get('isNew'), "Record should be new");
   ok(!record.get('id'), "Record #id should be undefined");
 

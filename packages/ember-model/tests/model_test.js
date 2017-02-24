@@ -1,35 +1,30 @@
-var Model, ModelWithoutID;
-
-function buildOwner() {
-  var Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin, {
-    init: function() {
-      this._super.apply(arguments);
-      var registry = new Ember.Registry(this._registryOptions);
-      this.__registry__ = registry;
-      this.__container__ = registry.container({ owner: this });
-    }
-  });
-
-  return Owner.create();
-}
+var Model, ModelWithoutID, owner, store;
 
 module("Ember.Model", {
   setup: function() {
     Model = Ember.Model.extend({
       token: Ember.attr(),
-      name: Ember.attr()
+      name: Ember.attr(),
+      type: 'test'
     });
     Model.primaryKey = 'token';
     Model.adapter = Ember.FixtureAdapter.create();
     Model.FIXTURES = [
       {token: 'a', name: 'Erik'}
     ];
+    owner = buildOwner();
     ModelWithoutID = Model.extend();
     ModelWithoutID.adapter = Ember.FixtureAdapter.create();
     ModelWithoutID.FIXTURES = [
       {name: 'Erik'},
       {name: 'Alex'}
     ];
+    Ember.setOwner(ModelWithoutID, owner);
+    Ember.setOwner(Model, owner);
+    store = Ember.Model.Store.create();
+    Ember.setOwner(store, owner);
+    owner.register('model:test', Model);
+    owner.register('service:store', Ember.Model.Store);
   },
   teardown: function() {
 
@@ -38,7 +33,6 @@ module("Ember.Model", {
 
 test("creates reference when creating record", function() {
   expect(4);
-
   var nextClientId = Model._clientIdCounter,
       model = Model.create({ token: 'abc123' }),
       reference = model._reference,
@@ -598,15 +592,18 @@ test("toJSON includes embedded relationships", function() {
 test("toJSON includes non-embedded relationships", function() {
   var Comment = Ember.Model.extend({
         id: Ember.attr(),
-        text: Ember.attr()
+        text: Ember.attr(),
+        type:'test'
       }),
       Author = Ember.Model.extend({
         id: Ember.attr(),
-        name: Ember.attr()
+        name: Ember.attr(),
+        type: 'test'
       }),
       Article = Ember.Model.extend({
         id: 1,
         title: Ember.attr(),
+        type: 'test',
         comments: Ember.hasMany(Comment, { key: 'comments' }),
         author: Ember.belongsTo(Author, { key: 'author' })
       });
@@ -617,6 +614,16 @@ test("toJSON includes non-embedded relationships", function() {
     comments: [1, 2, 3],
     author: 1
   };
+  owner = buildOwner();
+  store = Ember.Model.Store.create();
+  Ember.setOwner(store, owner);
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Author, owner);
+  Ember.setOwner(Article, owner);
+  owner.register('model:test', Comment);
+  owner.register('model:test', Author);
+  owner.register('model:test', Article);
+  owner.register('service:store', Ember.Model.Store);
 
   Author.adapter = Ember.FixtureAdapter.create();
   Comment.adapter = Ember.FixtureAdapter.create();
@@ -647,14 +654,17 @@ test("toJSON works with string names", function() {
 
   var Comment = Ember.Model.extend({
         id: Ember.attr(),
-        text: Ember.attr()
+        text: Ember.attr(),
+        type: 'comment'
       }),
       Author = Ember.Model.extend({
         id: Ember.attr(),
-        name: Ember.attr()
+        name: Ember.attr(),
+        type:'author'
       }),
       Article = Ember.Model.extend({
         id: 1,
+        type: 'article',
         title: Ember.attr(),
         comments: Ember.hasMany('comment', { key: 'comments' }),
         author: Ember.belongsTo('author', { key: 'author' })
@@ -701,13 +711,16 @@ test("creating a record with camelizedKeys = true works as expected", function()
   expect(1);
 
   var Page = Ember.Model.extend({
-    someAuthor: Ember.attr()
+    someAuthor: Ember.attr(),
+    type: 'test'
   });
+  owner.register('model:test', Page);
   Page.camelizeKeys = true;
   Page.adapter = Ember.FixtureAdapter.create();
   Page.FIXTURES = [];
-
+  Ember.setOwner(Page, owner);
   var record = Page.create({someAuthor: 'Brian'});
+  Ember.setOwner(record, owner);
 
   record.save();
   stop();
@@ -747,6 +760,44 @@ test("record is available in reference cache when load is run in cachedRecordFor
   Post.cachedRecordForId('1');
 
   ok(recordFromCache, 'record should be available in cache when running load');
+});
+
+test("reference cache is undefined from record when Model.transient is true in _createReference", function() {
+  var id = 1;
+  var recordFromCache,
+      Post = Ember.Model.extend({
+        id: id,
+        load: function() {
+          recordFromCache = this.constructor._referenceCache['1'].record;
+        }
+      });
+
+  Post.reopenClass({
+    transient: true
+  });
+
+  Post._createReference(1);
+
+  equal(Post._referenceCache[id], undefined, 'referenceCache at id is undefined when transient is true');
+});
+
+test("reference cache is available from record when Model.transient is false in _createReference", function() {
+  var id = 1;
+  var recordFromCache,
+      Post = Ember.Model.extend({
+        id: id,
+        load: function() {
+          recordFromCache = this.constructor._referenceCache['1'].record;
+        }
+      });
+
+  Post.reopenClass({
+    transient: false
+  });
+
+  Post._createReference(1);
+
+  equal(Post._referenceCache[id].id, 1, 'referenceCache has an id of 1 when transient is false');
 });
 
 test("fetchQuery returns a promise", function() {

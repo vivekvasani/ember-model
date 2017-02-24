@@ -1,5 +1,7 @@
 var attr = Ember.attr;
 
+var owner, store;
+
 module("Ember.HasManyArray - manipulation");
 
 test("pushing record without an id adds a reference to the content", function() {
@@ -128,6 +130,7 @@ test('adding and reverting a new record to a many array', function () {
 });
 
 test("removing a record from the many array", function() {
+
   var json = {
     id: 1,
     title: 'foo',
@@ -135,12 +138,13 @@ test("removing a record from the many array", function() {
   };
 
   var Comment = Ember.Model.extend({
-    text: attr()
+    text: attr(),
+    type: 'test'
   });
 
   var Article = Ember.Model.extend({
     title: attr(),
-
+    type: 'test',
     comments: Ember.hasMany(Comment, { key: 'comments' })
   });
 
@@ -150,7 +154,13 @@ test("removing a record from the many array", function() {
     {id: 2, text: 'dos'},
     {id: 3, text: 'tres'}
   ];
-
+  owner = buildOwner();
+  store = Ember.Model.Store.create();
+  Ember.setOwner(store, owner);
+  owner.register('model:test', Comment);
+  owner.register('service:store', Ember.Model.Store);
+  Ember.setOwner(Comment, owner);
+  
   var article = Article.create();
   Ember.run(article, article.load, json.id, json);
 

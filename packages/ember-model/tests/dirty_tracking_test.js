@@ -1,3 +1,4 @@
+var owner, store;
 var attr = Ember.attr;
 
 module("Dirty tracking");
@@ -297,9 +298,16 @@ test("manipulating object presence in a hasMany should dirty the parent", functi
 
 test("manipulating the order of objects in a hasMany shouldn't dirty the parent", function() {
   var Comment = Ember.Model.extend({
-    id: Ember.attr()
+    id: Ember.attr(),
+    type: 'test'
   });
   Comment.adapter = Ember.FixtureAdapter.create();
+  owner = buildOwner();
+  store = Ember.Model.Store.create();
+  Ember.setOwner(store, owner);
+  owner.register('model:test', Comment);
+  Ember.setOwner(Comment, owner);
+  owner.register('service:store', Ember.Model.Store);
   Comment.FIXTURES = [{
     id: 1
   }, {
