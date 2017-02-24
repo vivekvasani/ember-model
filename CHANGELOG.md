@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.1] 2016-12-12
+- [#2](https://github.com/CondeNast/ember-model/pull/2) [Bugfix] Add adapter to factory classes for `hasMany` polymorphic relationships. Also, disabling caching when the model class has a `transient` property.
+
 ## [0.1.0] 2016-12-12
 - [#1](https://github.com/CondeNast/ember-model/pull/1) [Feature] Add support for embedded polymorphic models
 
