@@ -473,7 +473,6 @@ Ember.HasManyArray = Ember.ManyArray.extend({
         content = get(this, 'content'),
         reference = content.objectAt(idx),
         record = reference.record;
-
     if (record) {
       if (! Ember.getOwner(record)) {
         Ember.setOwner(record, owner);
@@ -539,6 +538,9 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
         store = owner.lookup('service:store');
         type =  klass.polymorphicType(attrs);
         klass = store.modelFor(type);
+        if (!klass.adapter.serializer) {
+          Ember.set(klass, 'adapter', store.adapterFor(type));
+        }
       }
       record = klass.create({ _reference: reference });
       reference.record = record;
@@ -1301,7 +1303,6 @@ Ember.Model.reopenClass({
         }
       }
     }
-
     return record;
   },
 
@@ -1367,6 +1368,9 @@ Ember.Model.reopenClass({
   // FIXME
   findFromCacheOrLoad: function(data, owner) {
     var record;
+    if (!owner) {
+      owner = Ember.getOwner(this);
+    }
     if (!data[get(this, 'primaryKey')]) {
       record = this.create({isLoaded: false});
     } else {
@@ -1374,7 +1378,12 @@ Ember.Model.reopenClass({
     }
     Ember.setOwner(record, owner);
     // set(record, 'data', data);
+    
     record.load(data[get(this, 'primaryKey')], data);
+    if (!this.adapter.serializer) {
+      var store = owner.lookup('service:store');
+      Ember.set(this, 'adapter', store.adapterFor(record.type));
+    }
     return record;
   },
 
@@ -1444,12 +1453,14 @@ Ember.Model.reopenClass({
   },
 
   _cacheReference: function(reference) {
-    if (!this._referenceCache) { this._referenceCache = {}; }
+   if (!this.transient) {
+      if (!this._referenceCache) { this._referenceCache = {}; }
 
-    // if we're creating an item, this process will be done
-    // later, once the object has been persisted.
-    if (!Ember.isEmpty(reference.id)) {
-      this._referenceCache[reference.id] = reference;
+      // if we're creating an item, this process will be done
+      // later, once the object has been persisted.
+      if (!Ember.isEmpty(reference.id)) {
+        this._referenceCache[reference.id] = reference;
+      }
     }
   }
 });
