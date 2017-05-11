@@ -457,7 +457,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var emptyObjects = [];
     for (var i = 0; i < this.get('length'); i++) {
       var record = this.objectAt(i);
-      if (this.isEmpty(record.toJSON())) {
+      if (record && this.isEmpty(record.toJSON())) {
         emptyObjects.pushObject(record);
       }
     }
